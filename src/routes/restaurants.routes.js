@@ -18,7 +18,7 @@ router
   // 4 PATCH /:id Actualizar restaurant (name, address)
   .patch(restaurantController.updateRestaurant)
   //5 DELETE /:id Deshabilitar restaurant.
-  .delete(restaurantController.disableRestaurant);
+  .delete(restaurantController.deleteRestaurant);
 
 // 6 POST /reviews/:id Crear una nueva reseña en el restaurant, siendo :id el id del restaurant (enviar comment, rating (INT) en req.body)
 // 7 PATCH /reviews/:restaurantId/:id Actualizar una reseña hecha en un restaurant, siendo :id el id del review y restaurantId el id del restaurant (comment, rating) SOLO EL AUTOR DE LA RESEÑA PUEDE ACTUALIZAR SU PROPIA RESEÑA

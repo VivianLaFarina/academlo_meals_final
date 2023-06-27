@@ -1,19 +1,20 @@
 const express = require('express');
-const OrderController = require('../controllers/order.controller');
+const orderController = require('../controllers/order.controller');
+const { or } = require('sequelize');
 const router = express.Router();
 
 //TODO: DEFINIR ENDPOINTS
 
 // 1 POST / Crear una nueva order (enviar quantity y mealId por req.body)
-router.route('/').post(OrderController.createOrder);
+router.route('/').post(orderController.createOrder);
 
 // 2 GET /me Obtener todas las órdenes del usuario
-router.route('/').get(OrderController.findAllOrders);
+router.route('/').get(orderController.findAllOrders);
 
 // 3 PATCH /:id Marcar una orden por id con status completed
 
 //  4 DELETE /:id Marcar una orden por id con status cancelled
-
+router.route('/:id').delete(orderController.deleteOrder);
 // Todas las rutas deben estar protegidas por un método de autentificación.
 // Para el endpoint POST / se debe realizar lo siguiente:
 //  Se debe buscar si existe la comida (meal), si no, enviar error.

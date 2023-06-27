@@ -71,12 +71,30 @@ exports.updateUser = async (req, res) => {
 };
 
 //4Deshabilitar cuenta de usuario ***
-exports.disableUser = (req, res) => {
+exports.deleteUser = async (req, res) => {
   try {
     //logic
+    const { id } = req.params;
+
+    const user = await User.findOne({
+      where: {
+        id,
+        status: 'active',
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: `User with id ${id} Not found`,
+      });
+    }
+
+    await user.update({ status: 'disabled' });
 
     return res.status(200).json({
       status: 'sucess',
+      message: `User account with Id ${user.id} disabled successfully`,
     });
   } catch (error) {
     console.log(error);

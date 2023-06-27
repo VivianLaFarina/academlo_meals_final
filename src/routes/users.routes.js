@@ -1,5 +1,5 @@
 const express = require('express');
-const userController = require('./../controllers/user.controller');
+const userController = require('../controllers/user.controller');
 
 const router = express.Router();
 
@@ -20,7 +20,7 @@ router
   //6  /orders/:id Obtener detalles de una sola orden dado un IDs ***
   .get(userController.findUser)
   //4 Deshabilitar cuenta de usuario
-  .delete(userController.disableUser)
+  .delete(userController.deleteUser)
   //3 Actualizar perfil de usuario (solo name y email)
   .patch(userController.updateUser);
 

@@ -7,6 +7,7 @@ exports.createRestaurant = async (req, res) => {
     const { name, address, rating } = req.body;
 
     const restaurant = await Restaurant.create({ name, address, rating });
+
     return res.status(200).json({
       status: 'sucess',
       restaurant,
@@ -104,12 +105,29 @@ exports.updateRestaurant = async (req, res) => {
   }
 };
 //5 DELETE /:id Deshabilitar restaurant.
-exports.disableRestaurant = (req, res) => {
+exports.deleteRestaurant = async (req, res) => {
   try {
-    //logic
+    const { id } = req.params;
+
+    const restaurant = await Restaurant.findOne({
+      where: {
+        id,
+        status: 'active',
+      },
+    });
+
+    if (!restaurant) {
+      return res.status(404).json({
+        status: 'error',
+        message: `Restaurant with id ${id} Not found`,
+      });
+    }
+
+    await restaurant.update({ status: 'disabled' });
 
     return res.status(200).json({
       status: 'sucess',
+      message: `Restaurant ${restaurant.name} disabled successfully`,
     });
   } catch (error) {
     console.log(error);

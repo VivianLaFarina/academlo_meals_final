@@ -2,6 +2,25 @@ const Meal = require('../models/meal.model');
 
 // 1 POST /:id Crear una nueva comida en el restaurant, siendo :id el id del restaurant (enviar name, price (INT) en req.body)
 
+exports.createMeal = async (req, res) => {
+  try {
+    const { name, price, restaurantId } = req.body;
+
+    const meal = await Meal.create({ name, price, restaurantId });
+    return res.status(200).json({
+      status: 'sucess',
+      meal,
+      restaurantId,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      status: 'Fail',
+      message: 'Something went very wrong! 🔴',
+    });
+  }
+};
+
 // 2 GET / Obtener todas las comidas con status active
 exports.findAllMeals = async (req, res) => {
   try {
@@ -87,12 +106,27 @@ exports.updateMeal = async (req, res) => {
 };
 // 5 DELETE /:id Deshabilitar comida
 
-exports.disableMeal = (req, res) => {
+exports.deleteMeal = async (req, res) => {
   try {
     //logic
+    const { id } = req.params;
+    const meal = await Meal.findOne({
+      where: {
+        id,
+        status: 'active',
+      },
+    });
+    if (!meal) {
+      return res.status(404).json({
+        status: 'error',
+        message: `Meal with id ${id} Not found`,
+      });
+    }
+    await meal.update({ status: 'disabled' });
 
     return res.status(200).json({
       status: 'sucess',
+      message: `Meal ${meal.name} disabled successfully`,
     });
   } catch (error) {
     console.log(error);

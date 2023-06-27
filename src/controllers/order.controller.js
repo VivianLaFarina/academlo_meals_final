@@ -35,9 +35,71 @@ exports.findAllOrders = (req, res) => {
     });
   }
 };
-// 3 PATCH /:id Marcar una orden por id con status completed
-//  4 DELETE /:id Marcar una orden por id con status cancelled
+// 3 PATCH /:id Marcar una orden por id con status completed // todo pending to completed
 
+exports.updateOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const order = await Order.findOne({
+      where: {
+        id,
+        status: 'pending',
+      },
+    });
+    if (!order) {
+      return res.status(404).json({
+        status: 'error',
+        message: `Order with id ${id} Not found`,
+      });
+    }
+    await order.update({ status });
+
+    return res.status(200).json({
+      status: 'sucess',
+      message: 'Order Status updated',
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      status: 'Fail',
+      message: 'Something went very wrong! 🔴',
+    });
+  }
+};
+
+//  4 DELETE /:id Marcar una orden por id con status cancelled
+exports.deleteOrder = async (req, res) => {
+  try {
+    //logic
+    const { id } = req.params;
+    const order = await Order.findOne({
+      where: {
+        id,
+        status: 'pending',
+      },
+    });
+    if (!order) {
+      return res.status(404).json({
+        status: 'error',
+        message: `Order with Id ${id} Not found`,
+      });
+    }
+    await order.update({ status: 'cancelled' });
+
+    return res.status(200).json({
+      status: 'sucess',
+      message: `Order ${order.id} deleted successfully`,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      status: 'Fail',
+      message: 'Something went very wrong! 🔴',
+    });
+  }
+};
 // Todas las rutas deben estar protegidas por un método de autentificación.
 // Para el endpoint POST / se debe realizar lo siguiente:
 //  Se debe buscar si existe la comida (meal), si no, enviar error.
