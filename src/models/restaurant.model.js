@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { db } = require('../database/config');
 
-const restaurant = db.define('restaurant', {
+const Restaurant = db.define('restaurants', {
   id: {
     primaryKey: true,
     autoIncrement: true,
@@ -31,4 +31,4 @@ const restaurant = db.define('restaurant', {
   },
 });
 
-module.exports = restaurant;
+module.exports = Restaurant;

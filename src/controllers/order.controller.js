@@ -1,8 +1,15 @@
+const Order = require('../models/order.model');
+
 // 1 POST / Crear una nueva order (enviar quantity y mealId por req.body)
-exports.createOrder = (req, res) => {
+exports.createOrder = async (req, res) => {
   try {
+    const { quantity, mealId } = req.body;
+
+    const order = await Order.create({ quantity, mealId });
+
     return res.status(200).json({
       status: 'sucess',
+      order,
     });
   } catch (error) {
     console.log(error);

@@ -1,8 +1,15 @@
+const Restaurant = require('../models/restaurant.model');
+
 //1 POST / Crear un nuevo restaurant (enviar name, address, rating (INT)) rating debe ser un valor del 1 al 5
-exports.createRestaurant = (req, res) => {
+
+exports.createRestaurant = async (req, res) => {
   try {
+    const { name, address, rating } = req.body;
+
+    const restaurant = await Restaurant.create({ name, address, rating });
     return res.status(200).json({
       status: 'sucess',
+      restaurant,
     });
   } catch (error) {
     console.log(error);
@@ -14,12 +21,18 @@ exports.createRestaurant = (req, res) => {
 };
 
 // 2 GET / Obtener todos los restaurants con status active
-exports.findAllRestaurant = (req, res) => {
+exports.findAllRestaurant = async (req, res) => {
   try {
     //logic
+    const restaurants = await Restaurant.findAll({
+      where: {
+        status: 'active',
+      },
+    });
 
     return res.status(200).json({
       status: 'sucess',
+      restaurants,
     });
   } catch (error) {
     console.log(error);
@@ -31,10 +44,22 @@ exports.findAllRestaurant = (req, res) => {
 };
 // 3 GET /:id Obtener restaurant por id
 
-exports.findRestaurant = (req, res) => {
+exports.findRestaurant = async (req, res) => {
   try {
     //logic
-
+    const { id } = req.params;
+    const restaurant = await Restaurant.findOne({
+      where: {
+        id,
+        status: 'active',
+      },
+    });
+    if (!restaurant) {
+      return res.status(404).json({
+        status: 'error',
+        message: `Restaurant with id ${id} Not found`,
+      });
+    }
     return res.status(200).json({
       status: 'sucess',
     });
@@ -47,12 +72,28 @@ exports.findRestaurant = (req, res) => {
   }
 };
 // 4 PATCH /:id Actualizar restaurant (name, address)
-exports.updateRestaurant = (req, res) => {
+exports.updateRestaurant = async (req, res) => {
   try {
-    //logic
+    const { id } = req.params;
+    const { name, address } = req.body;
+
+    const restaurant = await Restaurant.findOne({
+      where: {
+        id,
+        status: 'active',
+      },
+    });
+    if (!restaurant) {
+      return res.status(404).json({
+        status: 'error',
+        message: `Restaurant with id ${id} Not found`,
+      });
+    }
+    await restaurant.update({ name, address });
 
     return res.status(200).json({
       status: 'sucess',
+      message: 'Restaurant updated',
     });
   } catch (error) {
     console.log(error);
