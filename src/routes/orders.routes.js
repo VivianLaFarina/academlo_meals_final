@@ -3,9 +3,15 @@ const OrderController = require('../controllers/order.controller');
 const router = express.Router();
 
 //TODO: DEFINIR ENDPOINTS
+
 // 1 POST / Crear una nueva order (enviar quantity y mealId por req.body)
+router.route('/').post(OrderController.createOrder);
+
 // 2 GET /me Obtener todas las órdenes del usuario
+router.route('/').get(OrderController.findAllOrders);
+
 // 3 PATCH /:id Marcar una orden por id con status completed
+
 //  4 DELETE /:id Marcar una orden por id con status cancelled
 
 // Todas las rutas deben estar protegidas por un método de autentificación.
