@@ -47,7 +47,6 @@ exports.findAllRestaurant = async (req, res) => {
 
 exports.findRestaurant = async (req, res) => {
   try {
-    //logic
     const { id } = req.params;
     const restaurant = await Restaurant.findOne({
       where: {
@@ -63,6 +62,7 @@ exports.findRestaurant = async (req, res) => {
     }
     return res.status(200).json({
       status: 'sucess',
+      restaurant,
     });
   } catch (error) {
     console.log(error);

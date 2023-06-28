@@ -106,9 +106,10 @@ exports.deleteUser = async (req, res) => {
 };
 
 //5  /orders  Obtener todas las ordenes hechas por el usuario ***
-exports.findAllUsers = (req, res) => {
+exports.findAllUsers = async (req, res) => {
   try {
     //logic
+    const repairs = await Repair.findAllUsers({});
 
     return res.status(200).json({
       status: 'sucess',

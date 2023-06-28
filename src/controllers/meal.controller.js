@@ -7,6 +7,7 @@ exports.createMeal = async (req, res) => {
     const { name, price, restaurantId } = req.body;
 
     const meal = await Meal.create({ name, price, restaurantId });
+
     return res.status(200).json({
       status: 'sucess',
       meal,
@@ -57,12 +58,13 @@ exports.findMeal = async (req, res) => {
     if (!meal) {
       return res.status(404).json({
         status: 'error',
-        message: `User with id ${id} Not found`,
+        message: `Meal with id ${id} Not found`,
       });
     }
 
     return res.status(200).json({
       status: 'sucess',
+      meal,
     });
   } catch (error) {
     console.log(error);

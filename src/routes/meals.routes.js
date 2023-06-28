@@ -7,7 +7,7 @@ const router = express.Router();
 
 // 1 POST /:id Crear una nueva comida en el restaurant, siendo :id el id del restaurant (enviar name, price (INT) en req.body)
 
-//router.route('/:id').post(mealController.createMeal);
+router.route('/').post(mealController.createMeal);
 
 // 2 GET / Obtener todas las comidas con status active
 router.route('/').get(mealController.findAllMeals);
