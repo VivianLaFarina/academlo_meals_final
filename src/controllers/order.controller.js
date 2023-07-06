@@ -1,107 +1,154 @@
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
 const Order = require('../models/order.model');
+const Meal = require('../models/meal.model');
 
-// 1 POST / Crear una nueva order (enviar quantity y mealId por req.body)
-exports.createOrder = async (req, res) => {
-  try {
-    const { quantity, mealId } = req.body;
+// 1 POST / Create a new order (send quantity and mealId in req.body)
+exports.createOrder = catchAsync(async (req, res, next) => {
+  // Create a new order (send quantity and mealId in req.body)
+  const { quantity, mealId } = req.body;
 
-    const order = await Order.create({ quantity, mealId });
+  // Get the id of the user placing the order
+  const { id } = req.sessionUser;
 
-    return res.status(200).json({
-      status: 'sucess',
+  const meal = await Meal.findOne({
+    where: {
+      id: mealId,
+      status: 'active',
+    },
+  });
+
+  if (!meal)
+    next(new AppError('Failed to create the order. Please try again 🟢', 404));
+
+  const order = await Order.create({
+    mealId,
+    userId: id,
+    totalPrice: quantity * meal.price,
+    quantity,
+  });
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Order created successfully! ✅',
+    data: {
       order,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      status: 'Fail',
-      message: 'Something went very wrong! 🔴',
-    });
-  }
-};
-// 2 GET /me Obtener todas las órdenes del usuario
-exports.findAllOrders = (req, res) => {
-  try {
-    //logic
+      totalPrice: quantity * meal.price,
+    },
+  });
+});
 
-    return res.status(200).json({
-      status: 'sucess',
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      status: 'Fail',
-      message: 'Something went very wrong! 🔴',
-    });
-  }
-};
-// 3 PATCH /:id Marcar una orden por id con status completed // todo pending to completed
+// 2 GET /me Get all user orders
+exports.getOrderUser = catchAsync(async (req, res, next) => {
+  // Get all orders of the user
+  const { id } = req.sessionUser;
 
-exports.updateOrder = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status } = req.body;
-
-    const order = await Order.findOne({
-      where: {
-        id,
-        status: 'pending',
+  const orders = await Order.findAll({
+    where: {
+      userId: id,
+      status: 'active',
+    },
+    include: [
+      {
+        model: Meal,
+        attributes: ['name', 'price'],
       },
-    });
-    if (!order) {
-      return res.status(404).json({
-        status: 'error',
-        message: `Order with id ${id} Not found`,
-      });
-    }
-    await order.update({ status });
+    ],
+  });
 
-    return res.status(200).json({
-      status: 'sucess',
-      message: 'Order Status updated',
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      status: 'Fail',
-      message: 'Something went very wrong! 🔴',
+  res.status(200).json({
+    status: 'success',
+    message: 'Orders retrieved successfully! 👩🏻‍🏭',
+    data: {
+      orders,
+    },
+  });
+});
+
+// 3 PATCH /:id Mark an order by id as completed //
+exports.udpateOrder = catchAsync(async (req, res, next) => {
+  // Mark an order by id as completed
+  const { id } = req.params;
+
+  const order = await Order.findOne({
+    where: {
+      id: id,
+      status: ['active', 'completed'],
+    },
+  });
+
+  // Check if the order exists and has an active status
+  if (!order)
+    next(
+      new AppError(
+        `The order has already been cancelled or the id: ${id} does not exist 🚫`,
+        404
+      )
+    );
+
+  // Check if the order is already completed
+  if (order.status === 'completed')
+    next(
+      new AppError(`The order with id: ${id} has already been completed! 🟢`)
+    );
+
+  // Update the order status to completed
+  await order.update({
+    status: 'completed',
+  });
+
+  res.status(200).json({
+    data: {
+      status: 'success',
+      message: 'Order completed successfully! ✅',
+      order: order,
+    },
+  });
+});
+
+// 4 DELETE /:id Mark an order by id as cancelled
+
+exports.deleteOrder = catchAsync(async (req, res, next) => {
+  // Mark an order by id as cancelled
+  const { id } = req.params;
+
+  const order = await Order.findOne({
+    where: {
+      id: id,
+      status: ['active', 'cancelled'],
+    },
+  });
+
+  // Check if the order exists and has an active status
+  if (!order) {
+    return res.status(404).json({
+      status: 'error',
+      message: `The order has already been completed or the ID: ${id} does not exist 🟢`,
     });
   }
-};
 
-//  4 DELETE /:id Marcar una orden por id con status cancelled
-exports.deleteOrder = async (req, res) => {
-  try {
-    //logic
-    const { id } = req.params;
-    const order = await Order.findOne({
-      where: {
-        id,
-        status: 'pending',
-      },
-    });
-    if (!order) {
-      return res.status(404).json({
-        status: 'error',
-        message: `Order with Id ${id} Not found`,
-      });
-    }
-    await order.update({ status: 'cancelled' });
-
+  // Check if the order is already cancelled
+  if (order.status === 'cancelled') {
     return res.status(200).json({
-      status: 'sucess',
-      message: `Order ${order.id} deleted successfully`,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      status: 'Fail',
-      message: 'Something went very wrong! 🔴',
+      status: 'success',
+      message: `The order with id: ${id} is already cancelled ✅ `,
     });
   }
-};
-// Todas las rutas deben estar protegidas por un método de autentificación.
-// Para el endpoint POST / se debe realizar lo siguiente:
-//  Se debe buscar si existe la comida (meal), si no, enviar error.
-// Calcular el precio para el usuario, multiplicar el precio de la comida (meal) encontrada previamente, por la cantidad solicitada por el usuario.
-// Crear una nueva orden, pasando el precio calculado, el mealId de la comida ya encontrada y la cantidad solicitada por el usuario.
+
+  // If the order is not cancelled, mark it as cancelled and send a successful response
+  await order.update({
+    status: 'cancelled',
+  });
+
+  res.status(200).json({
+    status: 'success',
+    message: 'The order was cancelled successfully 🟢',
+    order: order,
+  });
+});
+
+// All routes must be protected by an authentication method.
+// For the POST / endpoint, the following should be done:
+// Search if the meal exists, if not, send an error.
+// Calculate the price for the user by multiplying the price of the found meal by the quantity requested by the user.
+// Create a new order, passing the calculated price, the mealId of the previously found meal, and the quantity requested by the user.

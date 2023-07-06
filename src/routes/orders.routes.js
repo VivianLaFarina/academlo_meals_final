@@ -1,24 +1,29 @@
-const express = require('express');
-const orderController = require('../controllers/order.controller');
-const { or } = require('sequelize');
-const router = express.Router();
+const validationsMiddleware = require('../middlewares/validation.middleware');
+const ordersController = require('../controllers/orders.controllers');
+const authMiddleware = require('../middlewares/auth.middleware');
+const ordersMiddleware = require('../middlewares/orders.middleware');
 
-//TODO: DEFINIR ENDPOINTS
+const { Router } = require('express');
+const router = Router();
 
-// 1 POST / Crear una nueva order (enviar quantity y mealId por req.body)
-router.route('/').post(orderController.createOrder);
+router.use(authMiddleware.protects);
 
-// 2 GET /me Obtener todas las órdenes del usuario
-router.route('/').get(orderController.findAllOrders);
+router.post(
+  '/',
+  validationsMiddleware.orderValidation,
+  ordersController.createNewOrder
+);
 
-// 3 PATCH /:id Marcar una orden por id con status completed
+router.get('/me', ordersController.findOrders);
 
-//  4 DELETE /:id Marcar una orden por id con status cancelled
-router.route('/:id').delete(orderController.deleteOrder);
-// Todas las rutas deben estar protegidas por un método de autentificación.
-// Para el endpoint POST / se debe realizar lo siguiente:
-//  Se debe buscar si existe la comida (meal), si no, enviar error.
-// Calcular el precio para el usuario, multiplicar el precio de la comida (meal) encontrada previamente, por la cantidad solicitada por el usuario.
-// Crear una nueva orden, pasando el precio calculado, el mealId de la comida ya encontrada y la cantidad solicitada por el usuario.
+router
+  .use(
+    '/:id',
+    authMiddleware.protectAccountOwnerByOrder,
+    ordersMiddleware.validationOrder
+  )
+  .route('/:id')
+  .patch(ordersController.updateOrder)
+  .delete(ordersController.deleteOrder);
 
 module.exports = router;
